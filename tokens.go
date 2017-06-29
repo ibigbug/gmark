@@ -13,4 +13,6 @@ const (
 	TypeLheading            = "lheading"
 	TypeParagraph           = "paragraph"
 	TypeHrule               = "hrule"
+	TypeListItem            = "listitem"
+	TypeNewline             = "newline"
 )

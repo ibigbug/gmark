@@ -20,6 +20,10 @@ func (r *renderer) Render(tok *Token) string {
 		return fmt.Sprintf("<h%d>%s</h%d>\n", tok.Level, tok.Text, tok.Level)
 	case TypeParagraph:
 		return fmt.Sprintf("<p>%s</p>\n", tok.Text)
+	case TypeNewline:
+		return "<br>\n"
+	case TypeListItem:
+		return fmt.Sprintf("<li>%s</li>", tok.Text)
 	}
 	panic("Unknow Token type")
 }

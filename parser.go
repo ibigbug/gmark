@@ -1,20 +1,41 @@
 package gmark
 
 import (
+	"fmt"
 	"strings"
 )
 
 type ParseFunc func([][]string) []*Token
 
 var EmptyParseFunc = func(m [][]string) (t []*Token) {
+	fmt.Println(m)
 	return
 }
 
 var DefaultParseFuncs = map[string]ParseFunc{
+	"newline":   parseNewline,
 	"hrule":     parseHrule,
 	"heading":   parseHeading,
 	"lheading":  parseLheading,
 	"paragraph": parseParagraph,
+	"listitem":  parseListItem,
+}
+
+func parseListItem(m [][]string) []*Token {
+	return []*Token{
+		&Token{
+			Type: TypeListItem,
+			Text: m[0][0],
+		},
+	}
+}
+
+func parseNewline(m [][]string) []*Token {
+	return []*Token{
+		&Token{
+			Type: TypeNewline,
+		},
+	}
 }
 
 func parseHrule(m [][]string) []*Token {

@@ -23,13 +23,16 @@ var (
 )
 
 var DefaultBlockGrammer = map[string]*regexp.Regexp{
+	"newline":   newline,
 	"hrule":     hrule,
 	"heading":   heading,
 	"lheading":  lheading,
+	"listitem":  listitem,
 	"paragraph": paragraph,
 }
 
 var DefaultSupportedRules = []string{
 	"newline", "hrule",
-	"heading", "lheading", "paragraph",
+	"heading", "lheading", "listitem",
+	"paragraph",
 }
