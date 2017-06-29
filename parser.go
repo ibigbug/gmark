@@ -14,13 +14,13 @@ var DefaultParseFuncs = map[string]ParseFunc{
 	"hrule":     parseHrule,
 	"heading":   parseHeading,
 	"lheading":  parseLheading,
-	"paragraph": EmptyParseFunc,
+	"paragraph": parseParagraph,
 }
 
 func parseHrule(m [][]string) []*Token {
 	return []*Token{
 		&Token{
-			Type: "hrule",
+			Type: TypeHrule,
 		},
 	}
 }
@@ -28,7 +28,7 @@ func parseHrule(m [][]string) []*Token {
 func parseHeading(m [][]string) []*Token {
 	return []*Token{
 		&Token{
-			Type:  "heading",
+			Type:  TypeHeading,
 			Level: len(m[0][1]),
 			Text:  m[0][2],
 		},
@@ -44,7 +44,7 @@ func parseLheading(m [][]string) []*Token {
 	}
 	return []*Token{
 		&Token{
-			Type:  "heading",
+			Type:  TypeHeading,
 			Level: level,
 			Text:  m[0][1],
 		},
@@ -54,7 +54,7 @@ func parseLheading(m [][]string) []*Token {
 func parseParagraph(m [][]string) []*Token {
 	return []*Token{
 		&Token{
-			Type: "paragraph",
+			Type: TypeParagraph,
 			Text: strings.TrimSuffix(m[0][1], "\n"),
 		},
 	}

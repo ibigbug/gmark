@@ -39,6 +39,13 @@ func TestConvert(t *testing.T) {
 			},
 			want: readFile("testdata/normal/headers.html"),
 		},
+		{
+			name: "ordered_and_unordered_lists",
+			args: struct{ text string }{
+				text: readFile("testdata/normal/ordered_and_unordered_lists.text"),
+			},
+			want: readFile("testdata/normal/ordered_and_unordered_lists.html"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

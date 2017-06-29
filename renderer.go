@@ -14,11 +14,11 @@ type renderer struct{}
 
 func (r *renderer) Render(tok *Token) string {
 	switch tok.Type {
-	case "hrule":
+	case TypeHrule:
 		return "<hr>\n"
-	case "heading":
+	case TypeHeading:
 		return fmt.Sprintf("<h%d>%s</h%d>\n", tok.Level, tok.Text, tok.Level)
-	case "paragraph":
+	case TypeParagraph:
 		return fmt.Sprintf("<p>%s</p>\n", tok.Text)
 	}
 	panic("Unknow Token type")
