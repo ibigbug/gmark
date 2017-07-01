@@ -1,9 +1,13 @@
 package gmark
 
 type Token struct {
-	Type  TokenType
-	Level int // heading level
-	Text  string
+	Type TokenType
+	Text string
+
+	// Extra
+	Level   int  // heading level
+	Ordered bool // ordered or unordered list
+	Loose   bool // if loose list item
 }
 
 type TokenType string
@@ -13,6 +17,8 @@ const (
 	TypeLheading            = "lheading"
 	TypeParagraph           = "paragraph"
 	TypeHrule               = "hrule"
-	TypeListItem            = "listitem"
 	TypeNewline             = "newline"
+	TypeListStart           = "liststart"
+	TypeListItem            = "listitem"
+	TypeListEnd             = "listend"
 )

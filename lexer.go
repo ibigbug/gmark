@@ -5,6 +5,12 @@ import (
 	"strings"
 )
 
+var (
+	replaceNewline = regexp.MustCompile("\r\n|\n")
+	replaceTabs    = regexp.MustCompile("\t")
+	trimEmptyLine  = regexp.MustCompile("(?m)^ +$")
+)
+
 type Lexer interface {
 	Process(string) []*Token
 }
@@ -21,8 +27,16 @@ type BlockLexer struct {
 	SupportedRules []string
 }
 
+func (l *BlockLexer) preprocess(text string) (cleaned string) {
+	cleaned = replaceNewline.ReplaceAllString(text, "\n")
+	cleaned = replaceTabs.ReplaceAllString(cleaned, "    ")
+	cleaned = strings.Replace(cleaned, "\u2424", "\n", -1)
+	cleaned = trimEmptyLine.ReplaceAllString(cleaned, "")
+	return
+}
+
 func (l *BlockLexer) Process(text string) (t []*Token) {
-	text = strings.TrimRight(text, "\n")
+	text = l.preprocess(text)
 
 	var manipulate = func(text string) (rv [][]string, matched bool) {
 		for _, ruleName := range l.SupportedRules {
