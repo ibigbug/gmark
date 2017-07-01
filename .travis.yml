@@ -1,0 +1,11 @@
+language: go
+
+go:
+  - 1.8.x
+  - tip
+
+script:
+  - go test -race -coverprofile=coverage.txt -covermode=atomic
+  - bash <(curl -s https://codecov.io/bash)  #TODO: move this to after_success
+
+after_success:
