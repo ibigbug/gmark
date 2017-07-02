@@ -50,7 +50,7 @@ func TestConvert(t *testing.T) {
 	for _, tt := range tests {
 
 		if got := Convert(tt.args.text); removeS(got) != removeS(tt.want) {
-			//				t.Errorf("Convert() = %v, want %v", removeS(got), removeS(tt.want))
+			t.Errorf("Convert() = %v, want %v", removeS(got), removeS(tt.want))
 		}
 
 	}

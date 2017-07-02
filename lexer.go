@@ -57,6 +57,16 @@ func (l *BlockLexer) Process(text string) (t []*Token) {
 						}
 					}
 				}
+				if ruleName == "listblock" {
+					for idx, mm := range m {
+						p := mm[0]
+						unpeek := listblockLookAhead.FindStringIndex(p)
+						if len(unpeek) != 0 {
+							mm[0] = mm[0][:unpeek[0]]
+							m[idx] = mm
+						}
+					}
+				}
 				tokens := pf(m)
 				t = append(t, tokens...)
 				return m, true
@@ -70,10 +80,7 @@ func (l *BlockLexer) Process(text string) (t []*Token) {
 	for text != "" {
 		m, matched := manipulate(text)
 		if matched {
-			var l = 0
-			for _, g := range m {
-				l += len(g[0])
-			}
+			var l = len(m[0][0])
 			text = text[l:]
 			continue
 		}

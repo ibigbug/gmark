@@ -48,10 +48,17 @@ func parseListBlock(m [][]string) []*Token {
 
 func parseListItem(m [][]string) []*Token {
 	tokens := make([]*Token, 0)
-	for _, mm := range m {
+	prev := false
+	for idx, mm := range m {
 		item := mm[1]
 		item = listbullet.ReplaceAllString(item, "")
-		loose := mm[3] == "\n\n"
+		var loose bool
+		if idx == len(m)-1 {
+			loose = prev == true
+		} else {
+			loose = mm[3] == "\n\n"
+		}
+		prev = loose
 		tokens = append(tokens, &Token{Type: TypeListItem, Text: item, Loose: loose})
 	}
 	return tokens
