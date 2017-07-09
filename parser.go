@@ -9,7 +9,7 @@ import (
 
 type ParseFunc func(*regexp2.Match) []*Token
 
-var EmptyParseFunc = func(m [][]string) (t []*Token) {
+var EmptyParseFunc = func(m *regexp2.Match) (t []*Token) {
 	fmt.Println(m)
 	return
 }
@@ -21,6 +21,7 @@ var DefaultParseFuncs = map[string]ParseFunc{
 	"lheading":  parseLheading,
 	"paragraph": parseParagraph,
 	"listblock": parseListBlock,
+	"text":      parseText,
 }
 
 func printM(m *regexp2.Match) {
@@ -31,6 +32,15 @@ func printM(m *regexp2.Match) {
 		for ii, c := range g.Captures {
 			fmt.Println("Cap", ii, c.String())
 		}
+	}
+}
+
+func parseText(m *regexp2.Match) []*Token {
+	return []*Token{
+		&Token{
+			Type: TypeText,
+			Text: m.String(),
+		},
 	}
 }
 func parseListBlock(m *regexp2.Match) []*Token {
@@ -61,18 +71,30 @@ func parseListItem(m *regexp2.Match) []*Token {
 	}
 	prev := false
 	for idx, mm := range matches {
-		printM(mm)
 		item := mm.String()
+		space := len(item)
 		item, _ = listbullet.Replace(item, "", -1, -1)
 		var loose bool
 		if idx == len(matches)-1 {
 			loose = prev == true
+			if strings.HasSuffix(item, "\n") {
+				item = strings.TrimRight(item, "\n")
+			}
 		} else {
 			loose = mm.GroupByNumber(3).String() == "\n"
 		}
 		prev = loose
-		fmt.Println(loose)
-		tokens = append(tokens, &Token{Type: TypeListItem, Text: item, Loose: loose})
+
+		if strings.Contains(item, "\n") {
+			space = space - len(item)
+			p := regexp2.MustCompile(fmt.Sprintf("^ {1,%d}", space), regexp2.Multiline)
+			item, _ = p.Replace(item, "", -1, -1)
+		}
+		tokens = append(tokens,
+			&Token{Type: TypeListItemStart, Loose: loose},
+			&Token{Type: TypeListItem, Text: item},
+			&Token{Type: TypeListItemEnd, Loose: loose},
+		)
 	}
 	return tokens
 }

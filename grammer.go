@@ -2,7 +2,6 @@ package gmark
 
 import (
 	"fmt"
-
 	"strings"
 
 	"github.com/dlclark/regexp2"
@@ -29,6 +28,8 @@ var (
 	listitem = regexp2.MustCompile(`^(( *)(?:[*+-]|\d+\.) [^\n]*`+
 		`(\n(?!\2(?:[*+-]|\d+\.) )[^\n]*)*)`, regexp2.Multiline)
 	listbullet = regexp2.MustCompile(`^ *(?:[*+-]|\d+\.) +`, regexp2.None)
+
+	text = regexp2.MustCompile(`^[^\n]+`, regexp2.None)
 )
 
 var DefaultBlockGrammer = map[string]*regexp2.Regexp{
@@ -38,12 +39,17 @@ var DefaultBlockGrammer = map[string]*regexp2.Regexp{
 	"lheading":  lheading,
 	"listblock": listblock,
 	"paragraph": paragraph,
+	"text":      text,
 }
 
 var DefaultSupportedRules = []string{
 	"newline", "hrule",
 	"heading", "lheading", "listblock",
 	"paragraph",
+}
+
+var listItemRules = []string{
+	"newline", "listblock", "text",
 }
 
 func stringify(p *regexp2.Regexp) (s string) {

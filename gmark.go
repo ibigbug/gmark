@@ -9,7 +9,7 @@ type Markdown struct {
 }
 
 func (m *Markdown) Parse(text string) string {
-	m.Tokens = m.Block.Process(text)
+	m.Tokens = m.Block.Process(text, nil)
 	return m.Output()
 }
 

@@ -13,7 +13,7 @@ var (
 )
 
 type Lexer interface {
-	Process(string) []*Token
+	Process(string, *[]string) []*Token
 }
 
 var DefaultBlockLexer = &BlockLexer{
@@ -36,11 +36,14 @@ func (l *BlockLexer) preprocess(text string) (cleaned string) {
 	return
 }
 
-func (l *BlockLexer) Process(text string) (t []*Token) {
+func (l *BlockLexer) Process(text string, rules *[]string) (t []*Token) {
 	text = l.preprocess(text)
 
+	if rules == nil {
+		rules = &l.SupportedRules
+	}
 	var manipulate = func(text string) (rv *regexp2.Match, matched bool) {
-		for _, ruleName := range l.SupportedRules {
+		for _, ruleName := range *rules {
 			re := l.Rules[ruleName]
 			m, _ := re.FindStringMatch(text)
 			if m == nil {
@@ -48,6 +51,18 @@ func (l *BlockLexer) Process(text string) (t []*Token) {
 			}
 			if pf, canParse := l.ParseFuncs[ruleName]; canParse {
 				tokens := pf(m)
+				if ruleName == "listblock" {
+					newTokens := make([]*Token, 0)
+					for _, t := range tokens {
+						if t.Type == TypeListItem {
+							recur := l.Process(t.Text, &listItemRules)
+							newTokens = append(newTokens, recur...)
+						} else {
+							newTokens = append(newTokens, t)
+						}
+					}
+					tokens = newTokens
+				}
 				t = append(t, tokens...)
 				return m, true
 			} else {

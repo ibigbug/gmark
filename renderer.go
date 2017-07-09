@@ -27,17 +27,24 @@ func (r *renderer) Render(tok *Token) string {
 			return "<ol>"
 		}
 		return "<ul>"
-	case TypeListItem:
+	case TypeListItemStart:
 		if tok.Loose {
-			return fmt.Sprintf("<li><p>%s</p></li>", tok.Text)
+			return "<li><p>"
 		}
-		return fmt.Sprintf("<li>%s</li>", tok.Text)
+		return "<li>"
+	case TypeListItemEnd:
+		if tok.Loose {
+			return "</p></li>"
+		}
+		return "</li>"
 	case TypeListEnd:
 		if tok.Ordered {
 			return "</ol>"
 		}
 		return "</ul>"
+	case TypeText:
+		return tok.Text
 	}
 
-	panic("Unknow Token type: " + string(tok.Type))
+	panic("Unknow Token type: " + string(tok.Type) + tok.Text)
 }
