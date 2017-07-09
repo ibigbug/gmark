@@ -2,32 +2,30 @@ package gmark
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
+
+	"github.com/dlclark/regexp2"
 )
 
 var (
-	newline    = regexp.MustCompile("^\n+")
-	blockcode  = regexp.MustCompile("^( {4}[^\n]+\n*)+")
-	fences     = regexp.MustCompile("^ *(`{3,}|~{3,}) *(\\S+)? *\n([\\s\\S]+?)\\s*(`{3,}|~{3,}) *(?:\n+|$)")
-	hrule      = regexp.MustCompile("^ {0,3}[-*_](?: *[-*_]){2,} *(?:\n+|$)")
-	heading    = regexp.MustCompile("^ *(#{1,6}) *([^\n]+?) *#* *(?:\n+|$)")
-	lheading   = regexp.MustCompile("^([^\n]+)\n *(=|-)+ *(?:\n+|$)")
-	blockquote = regexp.MustCompile("^( *>[^\n]+(\n[^\n]+)*\n*)+")
-	paragraph  = regexp.MustCompile("^((?:[^\n]+\n?)+)\n*")
-	listblock  = regexp.MustCompile("^( *)([*+-]|\\d\\.) [\\s\\S]+?\n{2,}" +
-		"(?:(?: *)(?:[*+-]|\\d\\.) [\\s\\S]+?\n{2,})*",
-	)
-	listitem   = regexp.MustCompile("(?m)^(( *)(?:[*+-]|\\d\\.) [^\n]*)(\n+)+")
-	listbullet = regexp.MustCompile("^ *(?:[*+-]|\\d+\\.) +")
+	newline    = regexp2.MustCompile(`^\n+`, regexp2.None)
+	blockcode  = regexp2.MustCompile(`^( {4}[^\n]+\n*)+`, regexp2.None)
+	fences     = regexp2.MustCompile("^ *(`{3,}|~{3,}) *(\\S+)? *\n([\\s\\S]+?)\\s*(`{3,}|~{3,}) *(?:\n+|$)", regexp2.None)
+	hrule      = regexp2.MustCompile(`^ {0,3}[-*_](?: *[-*_]){2,} *(?:\n+|$)`, regexp2.None)
+	heading    = regexp2.MustCompile(`^ *(#{1,6}) *([^\n]+?) *#* *(?:\n+|$)`, regexp2.None)
+	lheading   = regexp2.MustCompile(`^([^\n]+)\n *(=|-)+ *(?:\n+|$)`, regexp2.None)
+	blockquote = regexp2.MustCompile(`^( *>[^\n]+(\n[^\n]+)*\n*)+`, regexp2.None)
+	paragraph  = regexp2.MustCompile(`^((?:[^\n]+\n?)+)\n*`, regexp2.None)
+	listblock  = regexp2.MustCompile(`^( *)([*+-]|\d\.) [\s\S]+(\n)*(( *)([*+-]|\d\.) [\s\S])*\n{2,}`, regexp2.None)
+	listitem   = regexp2.MustCompile(`^(( *)(?:[*+-]|\d\.) [^\n]*)(\n+)+`, regexp2.Multiline)
+	listbullet = regexp2.MustCompile(`^ *(?:[*+-]|\d+\.) +`, regexp2.None)
 
-	paragraphLookAhead = regexp.MustCompile(fmt.Sprintf("(?:%s|%s)",
-		strings.TrimPrefix(heading.String(), "^"),
-		strings.TrimPrefix(lheading.String(), "^")))
-	listblockLookAhead = regexp.MustCompile(strings.TrimPrefix(hrule.String(), "^"))
+	paragraphLookAhead = regexp2.MustCompile(fmt.Sprintf(`(?:%s|%s)`,
+		strings.TrimPrefix(heading.String(), `^`),
+		strings.TrimPrefix(lheading.String(), `^`)), regexp2.None)
 )
 
-var DefaultBlockGrammer = map[string]*regexp.Regexp{
+var DefaultBlockGrammer = map[string]*regexp2.Regexp{
 	"newline":   newline,
 	"hrule":     hrule,
 	"heading":   heading,

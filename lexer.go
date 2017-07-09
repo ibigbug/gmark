@@ -1,14 +1,15 @@
 package gmark
 
 import (
-	"regexp"
 	"strings"
+
+	"github.com/dlclark/regexp2"
 )
 
 var (
-	replaceNewline = regexp.MustCompile("\r\n|\n")
-	replaceTabs    = regexp.MustCompile("\t")
-	trimEmptyLine  = regexp.MustCompile("(?m)^ +$")
+	replaceNewline = regexp2.MustCompile("\r\n|\n", regexp2.None)
+	replaceTabs    = regexp2.MustCompile("\t", regexp2.None)
+	trimEmptyLine  = regexp2.MustCompile("^ +$", regexp2.Multiline)
 )
 
 type Lexer interface {
@@ -22,16 +23,16 @@ var DefaultBlockLexer = &BlockLexer{
 }
 
 type BlockLexer struct {
-	Rules          map[string]*regexp.Regexp
+	Rules          map[string]*regexp2.Regexp
 	ParseFuncs     map[string]ParseFunc
 	SupportedRules []string
 }
 
 func (l *BlockLexer) preprocess(text string) (cleaned string) {
-	cleaned = replaceNewline.ReplaceAllString(text, "\n")
-	cleaned = replaceTabs.ReplaceAllString(cleaned, "    ")
+	cleaned, _ = replaceNewline.Replace(text, "\n", -1, -1)
+	cleaned, _ = replaceTabs.Replace(cleaned, "    ", -1, -1)
 	cleaned = strings.Replace(cleaned, "\u2424", "\n", -1)
-	cleaned = trimEmptyLine.ReplaceAllString(cleaned, "")
+	cleaned, _ = trimEmptyLine.Replace(cleaned, "", -1, -1)
 	return
 }
 
@@ -41,32 +42,11 @@ func (l *BlockLexer) Process(text string) (t []*Token) {
 	var manipulate = func(text string) (rv [][]string, matched bool) {
 		for _, ruleName := range l.SupportedRules {
 			re := l.Rules[ruleName]
-			m := re.FindAllStringSubmatch(text, -1)
-			if len(m) == 0 {
+			m, _ := re.FindStringMatch(text, -1)
+			if m == nil {
 				continue
 			}
 			if pf, canParse := l.ParseFuncs[ruleName]; canParse {
-				if ruleName == "paragraph" {
-					for idx, mm := range m {
-						p := mm[0]
-						unpeek := paragraphLookAhead.FindStringIndex(p)
-						if len(unpeek) != 0 {
-							mm[0] = mm[0][:unpeek[0]]
-							mm[1] = mm[0]
-							m[idx] = mm
-						}
-					}
-				}
-				if ruleName == "listblock" {
-					for idx, mm := range m {
-						p := mm[0]
-						unpeek := listblockLookAhead.FindStringIndex(p)
-						if len(unpeek) != 0 {
-							mm[0] = mm[0][:unpeek[0]]
-							m[idx] = mm
-						}
-					}
-				}
 				tokens := pf(m)
 				t = append(t, tokens...)
 				return m, true

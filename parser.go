@@ -3,9 +3,11 @@ package gmark
 import (
 	"fmt"
 	"strings"
+
+	"github.com/dlclark/regexp2"
 )
 
-type ParseFunc func([][]string) []*Token
+type ParseFunc func(*regexp2.Match) []*Token
 
 var EmptyParseFunc = func(m [][]string) (t []*Token) {
 	fmt.Println(m)
@@ -21,16 +23,15 @@ var DefaultParseFuncs = map[string]ParseFunc{
 	"listblock": parseListBlock,
 }
 
-func printM(m [][]string) {
-	for i, mm := range m {
-		fmt.Printf("M%d\n", i)
-		for ii, mmm := range mm {
-			fmt.Printf("Group%d\n", ii)
-			fmt.Println(mmm)
+func printM(m *regexp2.Match) {
+	for _, g := range m.Groups() {
+		for _, c := range g.Captures() {
+			fmt.Println(c)
 		}
 	}
 }
-func parseListBlock(m [][]string) []*Token {
+func parseListBlock(m *regexp2.Match) []*Token {
+	printM(m)
 	bullet := m[0][2]
 	ordered := strings.Contains(bullet, ".")
 	tokens := []*Token{
@@ -46,7 +47,7 @@ func parseListBlock(m [][]string) []*Token {
 	return tokens
 }
 
-func parseListItem(m [][]string) []*Token {
+func parseListItem(m *regexp2.Match) []*Token {
 	tokens := make([]*Token, 0)
 	prev := false
 	for idx, mm := range m {
@@ -64,7 +65,7 @@ func parseListItem(m [][]string) []*Token {
 	return tokens
 }
 
-func parseNewline(m [][]string) []*Token {
+func parseNewline(m *regexp2.Match) []*Token {
 	return []*Token{
 		&Token{
 			Type: TypeNewline,
@@ -72,7 +73,7 @@ func parseNewline(m [][]string) []*Token {
 	}
 }
 
-func parseHrule(m [][]string) []*Token {
+func parseHrule(m *regexp2.Match) []*Token {
 	return []*Token{
 		&Token{
 			Type: TypeHrule,
@@ -80,7 +81,7 @@ func parseHrule(m [][]string) []*Token {
 	}
 }
 
-func parseHeading(m [][]string) []*Token {
+func parseHeading(m *regexp2.Match) []*Token {
 	return []*Token{
 		&Token{
 			Type:  TypeHeading,
@@ -90,7 +91,7 @@ func parseHeading(m [][]string) []*Token {
 	}
 }
 
-func parseLheading(m [][]string) []*Token {
+func parseLheading(m *regexp2.Match) []*Token {
 	var level int
 	if m[0][2] == "=" {
 		level = 1
@@ -106,7 +107,7 @@ func parseLheading(m [][]string) []*Token {
 	}
 }
 
-func parseParagraph(m [][]string) []*Token {
+func parseParagraph(m *regexp2.Match) []*Token {
 	return []*Token{
 		&Token{
 			Type: TypeParagraph,
