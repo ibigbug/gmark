@@ -39,10 +39,10 @@ func (l *BlockLexer) preprocess(text string) (cleaned string) {
 func (l *BlockLexer) Process(text string) (t []*Token) {
 	text = l.preprocess(text)
 
-	var manipulate = func(text string) (rv [][]string, matched bool) {
+	var manipulate = func(text string) (rv *regexp2.Match, matched bool) {
 		for _, ruleName := range l.SupportedRules {
 			re := l.Rules[ruleName]
-			m, _ := re.FindStringMatch(text, -1)
+			m, _ := re.FindStringMatch(text)
 			if m == nil {
 				continue
 			}
@@ -51,7 +51,7 @@ func (l *BlockLexer) Process(text string) (t []*Token) {
 				t = append(t, tokens...)
 				return m, true
 			} else {
-				panic("Unknow syntax: " + ruleName + m[0][0])
+				panic("Unknow syntax: " + ruleName + m.Group.String())
 			}
 		}
 		return nil, false
@@ -60,12 +60,12 @@ func (l *BlockLexer) Process(text string) (t []*Token) {
 	for text != "" {
 		m, matched := manipulate(text)
 		if matched {
-			var l = len(m[0][0])
+			var l = len(m.Group.String())
 			text = text[l:]
 			continue
 		}
 		if text != "" {
-			panic("failed")
+			panic("failed" + text)
 		}
 	}
 	return

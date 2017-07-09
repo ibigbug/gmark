@@ -24,15 +24,15 @@ var DefaultParseFuncs = map[string]ParseFunc{
 }
 
 func printM(m *regexp2.Match) {
-	for _, g := range m.Groups() {
-		for _, c := range g.Captures() {
-			fmt.Println(c)
+	for i, g := range m.Groups() {
+		fmt.Println("Group", i)
+		for ii, c := range g.Captures {
+			fmt.Println("Cap", ii, c.String())
 		}
 	}
 }
 func parseListBlock(m *regexp2.Match) []*Token {
-	printM(m)
-	bullet := m[0][2]
+	bullet := m.GroupByNumber(2).Capture.String()
 	ordered := strings.Contains(bullet, ".")
 	tokens := []*Token{
 		&Token{
@@ -41,7 +41,7 @@ func parseListBlock(m *regexp2.Match) []*Token {
 		},
 	}
 
-	listitems := listitem.FindAllStringSubmatch(m[0][0], -1)
+	listitems, _ := listitem.FindStringMatch(m.Group.String())
 	tokens = append(tokens, parseListItem(listitems)...)
 	tokens = append(tokens, &Token{Type: TypeListEnd, Ordered: ordered})
 	return tokens
@@ -50,14 +50,14 @@ func parseListBlock(m *regexp2.Match) []*Token {
 func parseListItem(m *regexp2.Match) []*Token {
 	tokens := make([]*Token, 0)
 	prev := false
-	for idx, mm := range m {
-		item := mm[1]
-		item = listbullet.ReplaceAllString(item, "")
+	for idx, mm := range m.Groups() {
+		item := mm.Capture.String()
+		item, _ = listbullet.Replace(item, "", -1, -1)
 		var loose bool
-		if idx == len(m)-1 {
+		if idx == m.GroupCount()-1 {
 			loose = prev == true
 		} else {
-			loose = mm[3] == "\n\n"
+			loose = mm.Captures[3].String() == "\n\n"
 		}
 		prev = loose
 		tokens = append(tokens, &Token{Type: TypeListItem, Text: item, Loose: loose})
@@ -85,15 +85,15 @@ func parseHeading(m *regexp2.Match) []*Token {
 	return []*Token{
 		&Token{
 			Type:  TypeHeading,
-			Level: len(m[0][1]),
-			Text:  m[0][2],
+			Level: len(m.GroupByNumber(1).String()),
+			Text:  m.GroupByNumber(2).String(),
 		},
 	}
 }
 
 func parseLheading(m *regexp2.Match) []*Token {
 	var level int
-	if m[0][2] == "=" {
+	if m.GroupByNumber(2).String() == "=" {
 		level = 1
 	} else {
 		level = 2
@@ -102,7 +102,7 @@ func parseLheading(m *regexp2.Match) []*Token {
 		&Token{
 			Type:  TypeHeading,
 			Level: level,
-			Text:  m[0][1],
+			Text:  m.GroupByNumber(1).String(),
 		},
 	}
 }
@@ -111,7 +111,7 @@ func parseParagraph(m *regexp2.Match) []*Token {
 	return []*Token{
 		&Token{
 			Type: TypeParagraph,
-			Text: strings.TrimSuffix(m[0][1], "\n"),
+			Text: strings.TrimSuffix(m.GroupByNumber(1).String(), "\n"),
 		},
 	}
 }
