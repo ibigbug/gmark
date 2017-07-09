@@ -19,8 +19,15 @@ var (
 	paragraph  = regexp2.MustCompile(
 		fmt.Sprintf(`^((?:[^\n]+\n?(?!%s|%s))+)\n*`, stringify(heading), stringify(lheading)),
 		regexp2.None)
-	listblock  = regexp2.MustCompile(`^( *)([*+-]|\d\.) [\s\S]+(\n)*(( *)([*+-]|\d\.) [\s\S])*\n{2,}`, regexp2.None)
-	listitem   = regexp2.MustCompile(`^(( *)(?:[*+-]|\d\.) [^\n]*)(\n+)+`, regexp2.Multiline)
+	listblock = regexp2.MustCompile(`^( *)([*+-]|\d+\.) [\s\S]+?`+
+		`(?:`+
+		`\n+(?=\1?(?:[-*_] *){3,}(?:\n+|$))`+ // hrule
+		`|\n{2,}`+
+		`(?! )`+
+		`(?!\1(?:[*+-]|\d+\.) )\n*`+
+		`|\s*$)`, regexp2.None)
+	listitem = regexp2.MustCompile(`^(( *)(?:[*+-]|\d+\.) [^\n]*`+
+		`(\n(?!\2(?:[*+-]|\d+\.) )[^\n]*)*)`, regexp2.Multiline)
 	listbullet = regexp2.MustCompile(`^ *(?:[*+-]|\d+\.) +`, regexp2.None)
 )
 

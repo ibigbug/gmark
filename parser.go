@@ -24,6 +24,8 @@ var DefaultParseFuncs = map[string]ParseFunc{
 }
 
 func printM(m *regexp2.Match) {
+	fmt.Println("Match")
+	fmt.Println(m.String())
 	for i, g := range m.Groups() {
 		fmt.Println("Group", i)
 		for ii, c := range g.Captures {
@@ -49,17 +51,27 @@ func parseListBlock(m *regexp2.Match) []*Token {
 
 func parseListItem(m *regexp2.Match) []*Token {
 	tokens := make([]*Token, 0)
+	matches := []*regexp2.Match{m}
+	for {
+		m, _ = listitem.FindNextMatch(m)
+		if m == nil {
+			break
+		}
+		matches = append(matches, m)
+	}
 	prev := false
-	for idx, mm := range m.Groups() {
-		item := mm.Capture.String()
+	for idx, mm := range matches {
+		printM(mm)
+		item := mm.String()
 		item, _ = listbullet.Replace(item, "", -1, -1)
 		var loose bool
-		if idx == m.GroupCount()-1 {
+		if idx == len(matches)-1 {
 			loose = prev == true
 		} else {
-			loose = mm.Captures[3].String() == "\n\n"
+			loose = mm.GroupByNumber(3).String() == "\n"
 		}
 		prev = loose
+		fmt.Println(loose)
 		tokens = append(tokens, &Token{Type: TypeListItem, Text: item, Loose: loose})
 	}
 	return tokens
